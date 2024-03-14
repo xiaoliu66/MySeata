@@ -1,0 +1,107 @@
+server:
+  port: 7002
+
+spring:
+  application:
+    name: measure-service
+  cloud:
+    nacos:
+      discovery:
+        server-addr: localhost:8848
+        username: nacos # Nacos用户名
+        password: nacos # Nacos密码
+      config:
+        import-check:
+          enabled: false
+          username: nacos # Nacos用户名
+          password: nacos # Nacos密码
+
+  datasource:
+    dynamic:
+      # 开启seata分布式事务
+      seata: true
+      strict: false
+      primary: measure
+      datasource:
+        measure:
+          url: jdbc:postgresql://localhost:5432/postgres
+          username: postgres
+          password: 123456
+#        contract:
+#          url: jdbc:mysql://127.0.0.1:3306/test?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8&rewriteBatchedStatements=true
+#          username: root
+#          password: 123456
+#          driver-class-name: com.mysql.cj.jdbc.Driver
+
+# MyBatis Plus配置
+mybatis-plus:
+  # 搜索指定包别名
+  typeAliasesPackage: com.ddz.**.entity
+  # 配置mapper的扫描，找到所有的mapper.xml映射文件
+  mapperLocations: classpath*:mapper/**/*.xml
+  global-config:
+    db-config:
+      id-type: auto
+  configuration:
+    # 开启驼峰，开启后，只要数据库字段和对象属性名字母相同，无论中间加多少下划线都可以识别
+    map-underscore-to-camel-case: true
+
+# Seata 配置
+seata:
+  application-id: ${spring.application.name}
+  # 是否启用数据源bean的自动代理
+  enable-auto-data-source-proxy: false
+  # seata事务分组
+  tx-service-group: default_tx_group  # 必须和服务器配置一样
+  registry:
+    type: nacos
+    nacos:
+      # Nacos 服务地址
+      server-addr: 127.0.0.1:8848
+      group: 'SEATA_GROUP'
+      namespace: ''
+      application: 'seata-server' # 必须和服务器配置一样
+      username: 'nacos'
+      password: 'nacos'
+      cluster: 'default'
+  config:
+    type: nacos
+    nacos:
+      server-addr: 127.0.0.1:8848
+      group: 'SEATA_GROUP'
+      username: 'nacos'
+      password: 'nacos'
+      data-id: 'seataServer.properties'
+  #      namespace: ''
+  #      namespace: '9ebef975-dcc0-4430-9c63-1c62d8a86d82'
+  service:
+    vgroup-mapping:
+      default_tx_group: default # 必须和服务器配置一样
+    disable-global-transaction: false
+  client:
+    rm:
+      # 是否上报成功状态
+      report-success-enable: true
+      # 重试次数
+      report-retry-count: 5
+
+
+
+feign:
+  okhttp:
+    enabled: true
+  client:
+    config:
+      default:
+        logger-level: FULL
+
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        cloud:
+#          openfeign: debug
+logging:
+  level:
+    com.example: debug
+  config: classpath:logback.xml
